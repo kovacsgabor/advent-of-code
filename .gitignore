@@ -1,0 +1,14 @@
+/.idea
+/.gradle
+
+# build folders
+/build
+/out
+/*/build
+/*/out
+
+# input files
+/**/input/20*
+
+# the session ID
+session_id.txt
