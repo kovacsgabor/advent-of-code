@@ -18,6 +18,7 @@ class Y2023Test {
         test(Y23Day8, 15989, 13830919117339),
         test(Y23Day9, 1762065988, 1066),
         test(Y23Day10, 6882, 491),
+        test(Y23Day11, 10494813, 840988812853),
     )
 
     private fun test(d: Day, part1: Any, part2: Any): DynamicTest =
