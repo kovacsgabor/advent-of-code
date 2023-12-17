@@ -2,7 +2,7 @@ package aoc
 
 object Y23Day17 : Day() {
 
-    data class State(val pos: Pos, val dir: Dir4, val straightCount: Int)
+    data class State(val pos: Pos, val dir: Dir4, val straightSteps: Int)
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -13,7 +13,7 @@ object Y23Day17 : Day() {
         fun solve(minStraightSteps: Int, maxStraightSteps: Int): Long =
             Graph<State> { (pos, dir, straightSteps) ->
                 val nextStates = mutableListOf<State>()
-                if (straightSteps >= minStraightSteps) { // we can turn
+                if (straightSteps >= minStraightSteps || straightSteps == 0) { // we can turn
                     fun turn(d: Dir4) = State(pos + d, d, 1)
                     nextStates += turn(dir.right())
                     nextStates += turn(dir.left())
@@ -35,7 +35,7 @@ object Y23Day17 : Day() {
                         0,
                     )
                 )
-                .filter { it.node.pos == goal }
+                .filter { it.node.pos == goal && it.node.straightSteps >= minStraightSteps }
                 .first()
                 .cost
 
