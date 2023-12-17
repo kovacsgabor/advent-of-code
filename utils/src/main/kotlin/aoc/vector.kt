@@ -2,39 +2,18 @@
 
 package aoc
 
-/** Abstract base class for vector types, like [Pos] and [Xyz]. */
-sealed class Vector<V : Vector<V>> : (Int) -> Long {
-
-    /** The number of dimensions of this vector. */
-    abstract val dimensions: Int
-
-    /** Returns a coordinate of this vector by its index. */
-    abstract override fun invoke(i: Int): Long
-
+/** A 2- or 3-dimensional vector. */
+sealed interface PosOrXyz {
+    val x: Long
+    val y: Long
 }
 
 
 /** A 2-dimensional vector (a "pos"ition on a 2D plane). */
-sealed class Pos : Vector<Pos>(), Vector2OrMore {
-
-    final override val dimensions: Int get() = 2
-    final override fun invoke(i: Int): Long = when (i) {
-        0 -> x
-        1 -> y
-        else -> throw IndexOutOfBoundsException(i)
-    }
-
-    override fun toString(): String = "Pos($x,$y)"
+sealed interface Pos : PosOrXyz {
 
     /** Returns a modified vector. */
     fun with(x: Long = this.x, y: Long = this.y): Pos = Pos(x, y)
-
-    fun neighbors4(): List<Pos> = Dir4(this)
-    fun neighbors8(): List<Pos> = Dir8(this)
-
-    // hashCode is optimized for small coordinates (the multiplier is the largest prime below the square root of 2^32)
-    final override fun hashCode(): Int = x.toInt() * 65_521 + y.toInt()
-    final override fun equals(other: Any?): Boolean = other is Pos && x == other.x && y == other.y
 
     companion object {
         val zero = Pos(0, 0)
@@ -49,43 +28,22 @@ sealed class Pos : Vector<Pos>(), Vector2OrMore {
     }
 
     /** Default implementation of [Pos]. */
-    private class Impl(override val x: Long, override val y: Long) : Pos()
+    @JvmRecord
+    private data class Impl(override val x: Long, override val y: Long) : Pos {
+        override fun hashCode(): Int = hash()
+        override fun equals(other: Any?): Boolean = isEqualTo(other)
+        override fun toString(): String = "Pos($x,$y)"
+    }
 }
 
 
 /** A 3-dimensional vector (with "x", "y" and "z" coordinates). */
-sealed class Xyz : Vector<Xyz>(), Vector3OrMore {
+sealed interface Xyz : PosOrXyz {
 
-    final override val dimensions: Int get() = 3
-    final override fun invoke(i: Int): Long = when (i) {
-        0 -> x
-        1 -> y
-        2 -> z
-        else -> throw IndexOutOfBoundsException(i)
-    }
-
-    override fun toString(): String = "Xyz($x,$y,$z)"
+    val z: Long
 
     /** Returns a modified vector. */
     fun with(x: Long = this.x, y: Long = this.y, z: Long = this.z): Xyz = Xyz(x, y, z)
-
-    /** The neighbors of this vector in the cardinal directions. */
-    fun neighbors6(): List<Xyz> = Dir6(this)
-
-    /** The neighbors of this vector in the cardinal and ordinal directions. */
-    fun neighbors26(): List<Xyz> = Dir26(this)
-
-    /** Calculates the cross product of this vector and [other]. */
-    infix fun crossProduct(other: Xyz): Xyz =
-        Xyz(
-            y * other.z - z * other.y,
-            z * other.x - x * other.z,
-            x * other.y - y * other.x
-        )
-
-    // hashCode is optimized for small coordinates (the multiplier is the largest prime below the cube root of 2^32)
-    final override fun hashCode(): Int = (x.toInt() * 1621 + y.toInt()) * 1621 + z.toInt()
-    final override fun equals(other: Any?): Boolean = other is Xyz && x == other.x && y == other.y && z == other.z
 
     companion object {
         val zero = Xyz(0, 0, 0)
@@ -103,7 +61,13 @@ sealed class Xyz : Vector<Xyz>(), Vector3OrMore {
         operator fun invoke(x: Int, y: Long, z: Long) = Xyz(x.toLong(), y, z)
     }
 
-    private class Impl(override val x: Long, override val y: Long, override val z: Long) : Xyz()
+    /** Default implementation of [Xyz]. */
+    @JvmRecord
+    private data class Impl(override val x: Long, override val y: Long, override val z: Long) : Xyz {
+        override fun hashCode(): Int = hash()
+        override fun equals(other: Any?): Boolean = isEqualTo(other)
+        override fun toString(): String = "Xyz($x,$y,$z)"
+    }
 
 }
 
@@ -122,3 +86,12 @@ fun Iterable<Pos>.toString(defaultText: String = "", widen: Int = 0, func: (Pos)
 /** Prints this map in table format. */
 fun <K> Map<Pos, K>.toString(defaultText: String = "", widen: Int = 0, func: (K) -> String): String =
     keys.toString(defaultText, widen) { func(this[it]!!) }
+
+
+// hashCode is optimized for small coordinates (the multiplier is the largest prime below the square root of 2^32)
+internal fun Pos.hash(): Int = x.toInt() * 65_521 + y.toInt()
+internal fun Pos.isEqualTo(other: Any?): Boolean = other is Pos && x == other.x && y == other.y
+
+// hashCode is optimized for small coordinates (the multiplier is the largest prime below the cube root of 2^32)
+internal fun Xyz.hash(): Int = (x.toInt() * 1621 + y.toInt()) * 1621 + z.toInt()
+internal fun Xyz.isEqualTo(other: Any?): Boolean = other is Xyz && x == other.x && y == other.y && z == other.z

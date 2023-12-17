@@ -29,6 +29,10 @@ infix fun Long.pow(a: Int): Long = toDouble().pow(a.toDouble()).toLong()
 infix fun Long.pow(a: Long): Long = toDouble().pow(a.toDouble()).toLong()
 
 
+// Power function on ints and longs
+infix fun Int.ceilDiv(a: Int): Int = if (this == 0) 0 else (this - 1) / a + 1
+infix fun Long.ceilDiv(a: Long): Long = if (this == 0L) 0 else (this - 1) / a + 1
+
 // product of iterables and sequences
 @kotlin.jvm.JvmName("productOfInt")
 fun Iterable<Int>.product(): Long = fold(1L) { a, b -> a * b }

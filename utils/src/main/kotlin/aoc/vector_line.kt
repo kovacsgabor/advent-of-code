@@ -1,92 +1,102 @@
 package aoc
 
+import kotlin.time.measureTime
+
 /**
  * Creates a line from this to [other].
  * The result is never empty: this vector does not have to be less than [other].
  */
-operator fun <V : Vector<V>> V.rangeTo(other: V): Line<V> = Line(this, other)
+operator fun Pos.rangeTo(other: Pos): Line<Pos> =
+    PosLine(UpOrDownRange(x, other.x), UpOrDownRange(y, other.y))
 
 /**
- * A range of vectors ([Pos] or [Xyz]), represents a straight line.
- * Supports the case when the vectors differ with different amounts in different dimensions
- * (so e.g. Pos(1, 2) -> Pos(5, 10), returning 9 elements).
+ * Creates a line from this to [other].
+ * The result is never empty: this vector does not have to be less than [other].
  */
-data class Line<V : Vector<V>>(val first: V, val last: V) : Iterable<V> {
+operator fun Xyz.rangeTo(other: Xyz): Line<Xyz> =
+    XyzLine(UpOrDownRange(x, other.x), UpOrDownRange(y, other.y), UpOrDownRange(z, other.z))
 
-    /**
-     * Contains a list of directions we have to move in.
-     * Each direction has at least one non-zero coordinate, and their coordinates are between -1 and 1.
-     * Empty if and only if [first] == [last].
-     */
-    val dirs: List<V>
+sealed interface Line<V : PosOrXyz> : Iterable<V> {
+    val first: V
+    val last: V
+    val size: Long
+}
 
-    /**
-     * Specifies for each direction how often it should be used during iteration.
-     * Contains distinct values as dimensions with the same increments are always grouped together.
-     * Always contains 1, unless [first] == [last], in which case it is empty.
-     */
-    val incrementEvery: List<Long>
+private data class PosLine(val x: UpOrDownRange, val y: UpOrDownRange) : Line<Pos> {
+    override val first: Pos get() = Pos(x.first, y.first)
+    override val last: Pos get() = Pos(x.last, y.last)
+    override val size: Long = max(x.size, y.size)
 
-    init {
-        val diff = last - first
+    override fun iterator(): Iterator<Pos> {
+        val xx = x.supplier(size)
+        val yy = y.supplier(size)
+        return object : Iterator<Pos> {
+            var index = 0L
+            override fun hasNext(): Boolean = index < size
+            override fun next(): Pos {
+                index++
+                return Pos(xx(), yy())
+            }
+        }
+    }
+}
 
-        @Suppress("UNCHECKED_CAST")
-        val dimensions: List<V> =
-            (when (val d = diff as Vector<*>) {
-                is Pos -> listOf(Pos(d.x, 0), Pos(0, d.y))
-                is Xyz -> listOf(Xyz(d.x, 0, 0), Xyz(0, d.y, 0), Xyz(0, 0, d.z))
-            } as List<V>)
-                .filterNot { it.isZero() }
+private data class XyzLine(val x: UpOrDownRange, val y: UpOrDownRange, val z: UpOrDownRange) : Line<Xyz> {
+    override val first: Xyz get() = Xyz(x.first, y.first, z.first)
+    override val last: Xyz get() = Xyz(x.last, y.last, z.last)
+    override val size: Long = max(max(x.size, y.size), z.size)
 
-        val dirs = dimensions.map { v -> v.map { it.coerceIn(-1, 1) } }
+    override fun iterator(): Iterator<Xyz> {
+        val xx = x.supplier(size)
+        val yy = y.supplier(size)
+        val zz = z.supplier(size)
+        return object : Iterator<Xyz> {
+            var index = 0L
+            override fun hasNext(): Boolean = index < size
+            override fun next(): Xyz {
+                index++
+                return Xyz(xx(), yy(), zz())
+            }
+        }
+    }
+}
 
-        val incrementEvery =
-            if (dimensions.isEmpty()) {
-                listOf()
-            } else {
-                val divisions = dimensions.zip(dirs) { a, b -> (a / b)!! }
-                val max = divisions.max()
-                divisions.map { max / it }
+/** Iterates from [first] to [last], both inclusive. */
+private data class UpOrDownRange(val first: Long, val last: Long) {
+    val size = abs(first - last) + 1
+    val sign = (last - first).sign()
+
+    fun supplier(targetSize: Long): () -> Long =
+        when (size) {
+            // Special case: we never increment
+            1L -> {
+                { first }
             }
 
-        // Group together dimensions with the same multiplier
-        val groupTogether = incrementEvery
-            .withIndex()
-            .groupBy({ it.value }, { it.index })
-            .toList()
+            // Special case: we increment on every element
+            targetSize -> {
+                var value = first
+                {
+                    val result = value
+                    value += sign
+                    result
+                }
+            }
 
-        this.dirs = groupTogether
-            .map { it.second }
-            .map { list -> list.map { dirs[it] }.sumOrNull()!! }
-
-        this.incrementEvery = groupTogether.map { it.first }
-    }
-
-    /**
-     * Returns the singleton element of [dirs], or null if contains zero or at least two elements.
-     */
-    val dir: V? get() = if (dirs.size == 1) dirs[0] else null
-
-    override fun iterator(): Iterator<V> = object : Iterator<V> {
-        var next: V? = first
-        var nextIndex = 0L
-
-        override fun hasNext(): Boolean = next != null
-
-        override fun next(): V {
-            val n = next!!
-            nextIndex++
-            next = if (n == last) null else increment(n)
-            return n
+            // General case: we increment at specific intervals
+            else -> {
+                val incrementEvery = targetSize ceilDiv size
+                var nextIncrement = incrementEvery
+                var value = first
+                {
+                    val result = value
+                    if (--nextIncrement == 0L) {
+                        nextIncrement = incrementEvery
+                        value += sign
+                    }
+                    result
+                }
+            }
         }
-
-        private fun increment(v: V): V =
-            v + incrementEvery
-                .asSequence()
-                .withIndex()
-                .filter { (_, divider) -> nextIndex % divider == 0L }
-                .map { (index, _) -> dirs[index] }
-                .sumOrNull()!!
-    }
 
 }

@@ -1,28 +1,50 @@
 package aoc
 
+/** The neighbors of this vector in the cardinal directions. */
+fun Pos.neighbors4(): List<Pos> = Dir4(this)
+
+/** The neighbors of this vector in the cardinal and ordinal directions. */
+fun Pos.neighbors8(): List<Pos> = Dir8(this)
+
+/** The neighbors of this vector in the cardinal directions. */
+fun Xyz.neighbors6(): List<Xyz> = Dir6(this)
+
+/** The neighbors of this vector in the cardinal and ordinal directions. */
+fun Xyz.neighbors26(): List<Xyz> = Dir26(this)
 
 /**
- * Base interface for companion objects of types that define directions in the 2D or 3D plane.
+ * Base interface for companion objects of types that define directions in the 2D plane.
  *
  * As a function, returns the neighbors of a vector in these directions.
  * As a graph, represents the infinite graph of vectors in which each vector is connected to its neighbors.
  */
-sealed interface Directions<V : Vector<V>> : (V) -> List<V>, Graph<V> {
-    val values: List<V>
+sealed interface Directions2D : (Pos) -> List<Pos>, Graph<Pos> {
+    val values: List<Pos>
 
-    override fun edges(node: V): Iterable<V> = this(node)
+    override fun edges(node: Pos): Iterable<Pos> = this(node)
+    override fun invoke(c: Pos): List<Pos> = values.map { c + it }
+}
 
-    override fun invoke(c: V): List<V> = values.map { c + it }
+/**
+ * Base interface for companion objects of types that define directions in the 3D plane.
+ *
+ * As a function, returns the neighbors of a vector in these directions.
+ * As a graph, represents the infinite graph of vectors in which each vector is connected to its neighbors.
+ */
+sealed interface Directions3D : (Xyz) -> List<Xyz>, Graph<Xyz> {
+    val values: List<Xyz>
+    override fun edges(node: Xyz): Iterable<Xyz> = this(node)
+    override fun invoke(c: Xyz): List<Xyz> = values.map { c + it }
 }
 
 
 /** The cardinal directions in 2D. */
-sealed class Dir4 private constructor(override val x: Long, override val y: Long) : Pos() {
+sealed class Dir4 private constructor(override val x: Long, override val y: Long) : Pos {
 
     object UP : Dir4(0, -1)
     object LEFT : Dir4(-1, 0)
     object DOWN : Dir4(0, 1)
-    object RIGHT : Dir4(1, 0);
+    object RIGHT : Dir4(1, 0)
 
     /** Returns the direction that is 90 degrees to the left to this one. */
     fun left(): Dir4 = when (this) {
@@ -72,7 +94,11 @@ sealed class Dir4 private constructor(override val x: Long, override val y: Long
         }
     }
 
-    companion object : Directions<Pos> {
+    final override fun hashCode(): Int = hash()
+    final override fun equals(other: Any?): Boolean = isEqualTo(other)
+    final override fun toString(): String = javaClass.simpleName
+
+    companion object : Directions2D {
         override val values: List<Dir4> by lazy { listOf(UP, LEFT, DOWN, RIGHT) }
     }
 
@@ -80,33 +106,21 @@ sealed class Dir4 private constructor(override val x: Long, override val y: Long
 
 
 /** The cardinal and ordinal directions in 2D. */
-sealed class Dir8 private constructor() : Pos() {
-    final override val x: Long
-    final override val y: Long
+sealed class Dir8 private constructor(
+    final override val x: Long,
+    final override val y: Long,
+) : Pos {
+    private constructor(p: Pos) : this(p.x, p.y)
 
-    init {
-        fun parse(s: String): Pos = when (s) {
-            "N" -> Dir4.UP
-            "W" -> Dir4.LEFT
-            "S" -> Dir4.DOWN
-            "E" -> Dir4.RIGHT
-            else -> throw IllegalArgumentException()
-        }
+    object N : Dir8(Dir4.UP)
+    object W : Dir8(Dir4.LEFT)
+    object S : Dir8(Dir4.DOWN)
+    object E : Dir8(Dir4.RIGHT)
 
-        val pos = this::class.simpleName!!.toChars().map { parse(it) }.sum()
-        x = pos.x
-        y = pos.y
-    }
-
-    object N : Dir8()
-    object W : Dir8()
-    object S : Dir8()
-    object E : Dir8()
-
-    object NW : Dir8()
-    object NE : Dir8()
-    object SW : Dir8()
-    object SE : Dir8()
+    object NW : Dir8(N + W)
+    object NE : Dir8(N + E)
+    object SW : Dir8(S + W)
+    object SE : Dir8(S + E)
 
     /** Returns the direction that is 45 degrees to the left to this one. */
     fun left(): Dir8 = when (this) {
@@ -132,7 +146,11 @@ sealed class Dir8 private constructor() : Pos() {
         NE -> E
     }
 
-    companion object : Directions<Pos> {
+    final override fun hashCode(): Int = hash()
+    final override fun equals(other: Any?): Boolean = isEqualTo(other)
+    final override fun toString(): String = javaClass.simpleName
+
+    companion object : Directions2D {
         override val values: List<Dir8> by lazy { listOf(N, W, S, E, NW, NE, SW, SE) }
     }
 
@@ -140,7 +158,7 @@ sealed class Dir8 private constructor() : Pos() {
 
 
 /** The cardinal directions in 3D. */
-sealed class Dir6 private constructor(override val x: Long, override val y: Long, override val z: Long) : Xyz() {
+sealed class Dir6 private constructor(override val x: Long, override val y: Long, override val z: Long) : Xyz {
     object NegX : Dir6(-1, 0, 0)
     object PosX : Dir6(1, 0, 0)
     object NegY : Dir6(0, -1, 0)
@@ -148,21 +166,25 @@ sealed class Dir6 private constructor(override val x: Long, override val y: Long
     object NegZ : Dir6(0, 0, -1)
     object PosZ : Dir6(0, 0, 1)
 
-    companion object : Directions<Xyz> {
+    final override fun hashCode(): Int = hash()
+    final override fun equals(other: Any?): Boolean = isEqualTo(other)
+    final override fun toString(): String = javaClass.simpleName
+
+    companion object : Directions3D {
         override val values: List<Dir6> by lazy { listOf(NegX, PosX, NegY, PosY, NegZ, PosZ) }
     }
 }
 
 
 /** The cardinal and ordinal directions in 3D. */
-sealed class Dir26 private constructor() : Xyz() {
+sealed class Dir26 private constructor() : Xyz {
     final override val x: Long
     final override val y: Long
     final override val z: Long
 
     init {
         fun parse(s: String): Xyz {
-            var result = zero
+            var result = Xyz.zero
             for (i in s.indices step 2) {
                 val sign = when (s[i]) {
                     'P' -> 1
@@ -180,7 +202,7 @@ sealed class Dir26 private constructor() : Xyz() {
             return result
         }
 
-        val xyz = parse(this::class.simpleName!!)
+        val xyz = parse(javaClass.simpleName)
         x = xyz.x
         y = xyz.y
         z = xyz.z
@@ -215,7 +237,11 @@ sealed class Dir26 private constructor() : Xyz() {
     object PxPyNz : Dir26()
     object PxPyPz : Dir26()
 
-    companion object : Directions<Xyz> {
+    final override fun hashCode(): Int = hash()
+    final override fun equals(other: Any?): Boolean = isEqualTo(other)
+    final override fun toString(): String = javaClass.simpleName
+
+    companion object : Directions3D {
         override val values: List<Dir26> by lazy {
             listOf(
                 Nx, Px, Ny, Py, Nz, Pz,
