@@ -11,10 +11,6 @@ sealed class Vector<V : Vector<V>> : (Int) -> Long {
     /** Returns a coordinate of this vector by its index. */
     abstract override fun invoke(i: Int): Long
 
-    final override fun hashCode(): Int =
-        reduce({ it.toInt() }, { a, b -> a * 32_452_843 + b }) // optimized for small dimensions
-
-    final override fun equals(other: Any?): Boolean = other is Vector<*> && areEqual(this, other)
 }
 
 
@@ -35,6 +31,10 @@ sealed class Pos : Vector<Pos>(), Vector2OrMore {
 
     fun neighbors4(): List<Pos> = Dir4(this)
     fun neighbors8(): List<Pos> = Dir8(this)
+
+    // hashCode is optimized for small coordinates (the multiplier is the largest prime below the square root of 2^32)
+    final override fun hashCode(): Int = x.toInt() * 65_521 + y.toInt()
+    final override fun equals(other: Any?): Boolean = other is Pos && x == other.x && y == other.y
 
     companion object {
         val zero = Pos(0, 0)
@@ -83,6 +83,10 @@ sealed class Xyz : Vector<Xyz>(), Vector3OrMore {
             x * other.y - y * other.x
         )
 
+    // hashCode is optimized for small coordinates (the multiplier is the largest prime below the cube root of 2^32)
+    final override fun hashCode(): Int = (x.toInt() * 1621 + y.toInt()) * 1621 + z.toInt()
+    final override fun equals(other: Any?): Boolean = other is Xyz && x == other.x && y == other.y && z == other.z
+
     companion object {
         val zero = Xyz(0, 0, 0)
         val one = Xyz(1, 1, 1)
@@ -118,17 +122,3 @@ fun Iterable<Pos>.toString(defaultText: String = "", widen: Int = 0, func: (Pos)
 /** Prints this map in table format. */
 fun <K> Map<Pos, K>.toString(defaultText: String = "", widen: Int = 0, func: (K) -> String): String =
     keys.toString(defaultText, widen) { func(this[it]!!) }
-
-
-private fun areEqual(self: Vector<*>, other: Vector<*>): Boolean {
-    if (self.dimensions != other.dimensions) return false
-    self.doReduceWith(
-        other,
-        { a, b ->
-            if (a != b) return false
-            Unit
-        },
-        { _, _ -> }
-    )
-    return true
-}
