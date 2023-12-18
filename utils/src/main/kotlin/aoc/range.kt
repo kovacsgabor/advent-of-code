@@ -3,9 +3,6 @@ package aoc
 import kotlin.math.max
 import kotlin.math.min
 
-infix fun Int.upToOrFrom(other: Int): IntRange = if (this <= other) this..other else other..this
-infix fun Long.upToOrFrom(other: Long): LongRange = if (this <= other) this..other else other..this
-
 fun IntRange.isNotEmpty() = !isEmpty()
 fun LongRange.isNotEmpty() = !isEmpty()
 

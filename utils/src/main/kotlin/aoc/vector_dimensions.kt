@@ -1,5 +1,3 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
-
 package aoc
 
 // Pattern matching support
@@ -19,13 +17,13 @@ val Iterable<Xyz>.z: Iterable<Long> get() = mapLazily { z }
 
 
 /** Returns the lazily calculated projection of the keys of this map to the [x] axis. */
-val <V : PosOrXyz, T> Map<V, T>.x: Iterable<Long> get() = keys.x
+val <V : PosOrXyz> Map<V, *>.x: Iterable<Long> get() = keys.x
 
 /** Returns the lazily calculated projection of the keys of this map to the [y] axis. */
-val <V : PosOrXyz, T> Map<V, T>.y: Iterable<Long> get() = keys.y
+val <V : PosOrXyz> Map<V, *>.y: Iterable<Long> get() = keys.y
 
 /** Returns the lazily calculated projection of the keys of this map to the [z] axis. */
-val <V : Xyz, T> Map<V, T>.z: Iterable<Long> get() = keys.z
+val <V : Xyz> Map<V, *>.z: Iterable<Long> get() = keys.z
 
 
 /** Calculates the lower bound of this iterable: a vector with minimal [x] and [y] values. */
@@ -35,10 +33,10 @@ fun Iterable<Pos>.minPos() = Pos(x.min(), y.min())
 fun Iterable<Xyz>.minXyz() = Xyz(x.min(), y.min(), z.min())
 
 /** Calculates the lower bound of the keys: a vector with minimal [x] and [y] values. */
-fun <V> Map<Pos, V>.minPos() = keys.minPos()
+fun Map<Pos, *>.minPos() = keys.minPos()
 
 /** Calculates the lower bound of the keys: a vector with minimal [x], [y] and [z] values. */
-fun <V> Map<Xyz, V>.minXyz() = keys.minXyz()
+fun Map<Xyz, *>.minXyz() = keys.minXyz()
 
 
 /** Calculates the upper bound of this iterable: a vector with maximal [x] and [y] values. */
@@ -52,33 +50,3 @@ fun <V> Map<Pos, V>.maxPos() = keys.maxPos()
 
 /** Calculates the upper bound of the keys: a vector with maximal [x], [y] and [z] values. */
 fun <V> Map<Xyz, V>.maxXyz() = keys.maxXyz()
-
-
-/**
- * Calculates the ranges of [x] and [y] that cover all elements in this iterable,
- * then increases these ranges in both directions with the given amount,
- * and lists all vectors in these increased ranges.
- */
-@kotlin.jvm.JvmName("widenPos")
-fun Iterable<Pos>.widen(amount: Long) =
-    x.range().widen(amount).flatMap { x ->
-        y.range().widen(amount).map { y ->
-            Pos(x, y)
-        }
-    }
-
-/**
- * Calculates the ranges of [x], [y] and [z] that cover all elements in this iterable,
- * then increases these ranges in both directions with the given amount,
- * and lists all vectors in these increased ranges.
- */
-@kotlin.jvm.JvmName("widenXyz")
-fun Iterable<Xyz>.widen(amount: Long): Iterable<Xyz> =
-    x.range().widen(amount).flatMap { x ->
-        y.range().widen(amount).flatMap { y ->
-            z.range().widen(amount).map { z ->
-                Xyz(x, y, z)
-            }
-        }
-    }
-

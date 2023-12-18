@@ -61,3 +61,12 @@ fun Map<Pos, *>.toPosBox(): PosBox = PosBox(x.range(), y.range())
 /** Calculates the bounding box of the keys. */
 fun Map<Xyz, *>.toXyzBox(): XyzBox = XyzBox(x.range(), y.range(), z.range())
 
+/**
+ * Increases the ranges of this box in both directions with the given amount.
+ */
+fun PosBox.widen(amount: Long) = PosBox(x.widen(amount), y.widen(amount))
+
+/**
+ * Increases the ranges of this box in both directions with the given amount.
+ */
+fun XyzBox.widen(amount: Long) = XyzBox(x.widen(amount), y.widen(amount), z.widen(amount))

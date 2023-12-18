@@ -46,6 +46,8 @@ sealed class Dir4 private constructor(override val x: Long, override val y: Long
     object DOWN : Dir4(0, 1)
     object RIGHT : Dir4(1, 0)
 
+    fun affectsX(): Boolean = this == RIGHT || this == LEFT
+
     /** Returns the direction that is 90 degrees to the left to this one. */
     fun left(): Dir4 = when (this) {
         UP -> LEFT

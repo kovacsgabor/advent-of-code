@@ -6,214 +6,160 @@ import kotlin.test.assertEquals
 class LineTest {
     @Test
     fun singleElementLine1() {
-        val line = Pos(0, 7)..Pos(0, 7)
-
-        assertEquals(Pos(0, 7), line.first)
-        assertEquals(Pos(0, 7), line.last)
-        assertEquals(1, line.size)
-        assertEquals(
-            listOf(
-                Pos(0, 7),
-            ), line.toList()
+        testPos(
+            Pos(0, 7),
         )
     }
 
     @Test
     fun singleElementLine2() {
-        val line = Xyz(0, 7, -2)..Xyz(0, 7, -2)
-
-        assertEquals(Xyz(0, 7, -2), line.first)
-        assertEquals(Xyz(0, 7, -2), line.last)
-        assertEquals(1, line.size)
-        assertEquals(
-            listOf(
-                Xyz(0, 7, -2),
-            ), line.toList()
+        testXyz(
+            Xyz(0, 7, -2),
         )
     }
 
     @Test
     fun oneDimensionLine1() {
-        val line = Pos(0, 1)..Pos(0, 5)
-
-        assertEquals(Pos(0, 1), line.first)
-        assertEquals(Pos(0, 5), line.last)
-        assertEquals(5, line.size)
-        assertEquals(
-            listOf(
-                Pos(0, 1),
-                Pos(0, 2),
-                Pos(0, 3),
-                Pos(0, 4),
-                Pos(0, 5),
-            ), line.toList()
+        testPos(
+            Pos(0, 1),
+            Pos(0, 2),
+            Pos(0, 3),
+            Pos(0, 4),
+            Pos(0, 5),
         )
     }
 
     @Test
     fun oneDimensionLine2() {
-        val line = Pos(-1, 0)..Pos(-5, 0)
-
-        assertEquals(Pos(-1, 0), line.first)
-        assertEquals(Pos(-5, 0), line.last)
-        assertEquals(5, line.size)
-        assertEquals(
-            listOf(
-                Pos(-1, 0),
-                Pos(-2, 0),
-                Pos(-3, 0),
-                Pos(-4, 0),
-                Pos(-5, 0),
-            ), line.toList()
+        testPos(
+            Pos(-1, 0),
+            Pos(-2, 0),
+            Pos(-3, 0),
+            Pos(-4, 0),
+            Pos(-5, 0),
         )
     }
 
     @Test
     fun oneDimensionLine3() {
-        val line = Xyz(0, 0, 0)..Xyz(0, 0, 2)
-
-        assertEquals(Xyz(0, 0, 0), line.first)
-        assertEquals(Xyz(0, 0, 2), line.last)
-        assertEquals(3, line.size)
-        assertEquals(
-            listOf(
-                Xyz(0, 0, 0),
-                Xyz(0, 0, 1),
-                Xyz(0, 0, 2),
-            ), line.toList()
+        testXyz(
+            Xyz(0, 0, 0),
+            Xyz(0, 0, 1),
+            Xyz(0, 0, 2),
         )
     }
 
     @Test
     fun oneDimensionLine4() {
-        val line = Xyz(0, 0, 0)..Xyz(0, -2, 0)
-
-        assertEquals(Xyz(0, 0, 0), line.first)
-        assertEquals(Xyz(0, -2, 0), line.last)
-        assertEquals(3, line.size)
-        assertEquals(
-            listOf(
-                Xyz(0, 0, 0),
-                Xyz(0, -1, 0),
-                Xyz(0, -2, 0),
-            ), line.toList()
+        testXyz(
+            Xyz(0, 0, 0),
+            Xyz(0, -1, 0),
+            Xyz(0, -2, 0),
         )
     }
 
     @Test
     fun oneDimensionLine5() {
-        val line = Xyz(10, 0, 0)..Xyz(9, 0, 0)
-
-        assertEquals(Xyz(10, 0, 0), line.first)
-        assertEquals(Xyz(9, 0, 0), line.last)
-        assertEquals(2, line.size)
-        assertEquals(
-            listOf(
-                Xyz(10, 0, 0),
-                Xyz(9, 0, 0),
-            ), line.toList()
+        testXyz(
+            Xyz(10, 0, 0),
+            Xyz(9, 0, 0),
         )
     }
 
     @Test
     fun sameIncrementLine1() {
-        val line = Pos(0, 0)..Pos(2, 2)
-
-        assertEquals(Pos(0, 0), line.first)
-        assertEquals(Pos(2, 2), line.last)
-        assertEquals(3, line.size)
-        assertEquals(
-            listOf(
-                Pos(0, 0),
-                Pos(1, 1),
-                Pos(2, 2),
-            ), line.toList()
+        testPos(
+            Pos(0, 0),
+            Pos(1, 1),
+            Pos(2, 2),
         )
     }
 
     @Test
     fun sameIncrementLine2() {
-        val line = Xyz(5, 25, 11)..Xyz(1, 21, 15)
-
-        assertEquals(Xyz(5, 25, 11), line.first)
-        assertEquals(Xyz(1, 21, 15), line.last)
-        assertEquals(5, line.size)
-        assertEquals(
-            listOf(
-                Xyz(5, 25, 11),
-                Xyz(4, 24, 12),
-                Xyz(3, 23, 13),
-                Xyz(2, 22, 14),
-                Xyz(1, 21, 15),
-            ), line.toList()
+        testXyz(
+            Xyz(5, 25, 11),
+            Xyz(4, 24, 12),
+            Xyz(3, 23, 13),
+            Xyz(2, 22, 14),
+            Xyz(1, 21, 15),
         )
     }
 
     @Test
     fun generalLine1() {
-        val line = Pos(1, 1)..Pos(3, 8)
-
-        assertEquals(Pos(1, 1), line.first)
-        assertEquals(Pos(3, 8), line.last)
-        assertEquals(8, line.size)
-        assertEquals(
-            listOf(
-                Pos(1, 1),
-                Pos(1, 2),
-                Pos(1, 3),
-                Pos(2, 4),
-                Pos(2, 5),
-                Pos(2, 6),
-                Pos(3, 7),
-                Pos(3, 8),
-            ), line.toList()
+        testPos(
+            Pos(1, 1),
+            Pos(1, 2),
+            Pos(1, 3),
+            Pos(2, 4),
+            Pos(2, 5),
+            Pos(2, 6),
+            Pos(3, 7),
+            Pos(3, 8),
         )
     }
 
     @Test
     fun generalLine2() {
-        val line = Xyz(5, 25, 11)..Xyz(1, 23, 20)
-
-        assertEquals(Xyz(5, 25, 11), line.first)
-        assertEquals(Xyz(1, 23, 20), line.last)
-        assertEquals(10, line.size)
-        assertEquals(
-            listOf(
-                Xyz(5, 25, 11),
-                Xyz(5, 25, 12),
-                Xyz(4, 25, 13),
-                Xyz(4, 25, 14),
-                Xyz(3, 24, 15),
-                Xyz(3, 24, 16),
-                Xyz(2, 24, 17),
-                Xyz(2, 24, 18),
-                Xyz(1, 23, 19),
-                Xyz(1, 23, 20),
-            ), line.toList()
+        testXyz(
+            Xyz(5, 25, 11),
+            Xyz(5, 25, 12),
+            Xyz(4, 25, 13),
+            Xyz(4, 25, 14),
+            Xyz(3, 24, 15),
+            Xyz(3, 24, 16),
+            Xyz(2, 24, 17),
+            Xyz(2, 23, 18),
+            Xyz(1, 23, 19),
+            Xyz(1, 23, 20),
         )
     }
 
     @Test
     fun generalLine3() {
-        val line = Xyz(5, 21, 11)..Xyz(1, 25, 20)
-
-        assertEquals(Xyz(5, 21, 11), line.first)
-        assertEquals(Xyz(1, 25, 20), line.last)
-        assertEquals(10, line.size)
-        assertEquals(
-            listOf(
-                Xyz(5, 21, 11),
-                Xyz(5, 21, 12),
-                Xyz(4, 22, 13),
-                Xyz(4, 22, 14),
-                Xyz(3, 23, 15),
-                Xyz(3, 23, 16),
-                Xyz(2, 24, 17),
-                Xyz(2, 24, 18),
-                Xyz(1, 25, 19),
-                Xyz(1, 25, 20),
-            ), line.toList()
+        testXyz(
+            Xyz(5, 21, 11),
+            Xyz(5, 21, 12),
+            Xyz(4, 22, 13),
+            Xyz(4, 22, 14),
+            Xyz(3, 23, 15),
+            Xyz(3, 23, 16),
+            Xyz(2, 24, 17),
+            Xyz(2, 24, 18),
+            Xyz(1, 25, 19),
+            Xyz(1, 25, 20),
         )
+    }
+
+    private fun testPos(vararg expectedIteration: Pos) {
+        val first = expectedIteration.first()
+        val last = expectedIteration.last()
+
+        val line = first..last
+        assertEquals(first, line.first)
+        assertEquals(last, line.last)
+        assertEquals(expectedIteration.size, line.size.toInt())
+        assertEquals(expectedIteration.toList(), line.toList())
+
+        for (e in listOf(first, last).toPosBox().widen(1)) {
+            assertEquals(e in expectedIteration, e in line, e.toString())
+        }
+    }
+
+    private fun testXyz(vararg expectedIteration: Xyz) {
+        val first = expectedIteration.first()
+        val last = expectedIteration.last()
+
+        val line = first..last
+        assertEquals(first, line.first)
+        assertEquals(last, line.last)
+        assertEquals(expectedIteration.size, line.size.toInt())
+        assertEquals(expectedIteration.toList(), line.toList())
+
+        for (e in listOf(first, last).toXyzBox().widen(1)) {
+            assertEquals(e in expectedIteration, e in line, e.toString())
+        }
     }
 
 }
