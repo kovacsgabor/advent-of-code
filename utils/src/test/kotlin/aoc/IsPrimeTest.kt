@@ -12,7 +12,7 @@ class IsPrimeTest {
 
     @BeforeEach
     fun clear() {
-        assertFalse(isPrime(0))
+        clearKnownPrimeLists()
     }
 
     @Test
