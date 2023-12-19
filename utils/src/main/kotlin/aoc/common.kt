@@ -1,5 +1,7 @@
 package aoc
 
+import java.util.Collections
+
 // Add aliases to some basic types and functions to shorten their names and/or bring them in scope
 typealias MList<T> = MutableList<T>
 typealias MSet<T> = MutableSet<T>
@@ -11,11 +13,23 @@ fun <T> Iterable<T>.toMSet(): MSet<T> = toMutableSet()
 fun <K, V> Map<K, V>.toMMap(): MMap<K, V> = toMutableMap()
 
 fun <T> mutableDequeOf(vararg values: T): ArrayDeque<T> = ArrayDeque(values.asList())
+fun <T> nCopies(n : Int, value: T): List<T> = Collections.nCopies(n, value)
 
 
 // Getter and setter for lists using a long index
 operator fun <T> List<T>.get(index: Long): T = get(index.toInt())
 operator fun <T> MList<T>.set(index: Long, value: T): T = set(index.toInt(), value)
+
+
+/** Creates a copy of the given list with the value at [index] replaced with [newValue] */
+fun <T> List<T>.with(index: Int, newValue: T): List<T> {
+    val copy = toMList()
+    copy[index] = newValue
+    return copy
+}
+
+/** Creates a copy of the given list with the value at [index] replaced with [newValue] */
+fun <T> List<T>.with(index: Long, newValue: T): List<T> = with(index.toInt(), newValue)
 
 
 // Character-related functions on strings that treat each character as a String.
