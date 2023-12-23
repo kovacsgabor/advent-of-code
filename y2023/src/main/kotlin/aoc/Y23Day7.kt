@@ -44,8 +44,6 @@ object Y23Day7 : Day() {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        test = false
-
         fun solve(hasJokers: Boolean) = lines
             .map { line ->
                 val (cards, value) = line.split(" ")

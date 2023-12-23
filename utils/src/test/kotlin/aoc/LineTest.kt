@@ -142,7 +142,7 @@ class LineTest {
         assertEquals(expectedIteration.size, line.size.toInt())
         assertEquals(expectedIteration.toList(), line.toList())
 
-        for (e in listOf(first, last).toPosBox().widen(1)) {
+        for (e in listOf(first, last).toPosBox().widen(1).xThenY()) {
             assertEquals(e in expectedIteration, e in line, e.toString())
         }
     }
@@ -157,7 +157,7 @@ class LineTest {
         assertEquals(expectedIteration.size, line.size.toInt())
         assertEquals(expectedIteration.toList(), line.toList())
 
-        for (e in listOf(first, last).toXyzBox().widen(1)) {
+        for (e in listOf(first, last).toXyzBox().widen(1).xThenYThenZ()) {
             assertEquals(e in expectedIteration, e in line, e.toString())
         }
     }

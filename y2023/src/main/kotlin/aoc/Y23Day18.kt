@@ -42,6 +42,7 @@ object Y23Day18 : Day() {
         val notEnclosedPositions = graph.bfs(greaterBox.minPos()).nodes.toSet()
 
         return box
+            .xThenY()
             .filter { it !in notEnclosedPositions }
             .sumOf { (x, y) ->
                 // Even coordinates are mapped to 1 true coordinate, so they are worth 1

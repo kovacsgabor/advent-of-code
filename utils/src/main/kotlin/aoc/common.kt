@@ -1,6 +1,7 @@
 package aoc
 
-import java.util.Collections
+import java.util.*
+import kotlin.collections.ArrayDeque
 
 // Add aliases to some basic types and functions to shorten their names and/or bring them in scope
 typealias MList<T> = MutableList<T>
@@ -46,6 +47,28 @@ fun <T : Comparable<T>> Iterable<T>.min(): T = minOf { it }
 fun <T : Comparable<T>> Iterable<T>.max(): T = maxOf { it }
 fun <T : Comparable<T>> Iterable<T>.bounds(): Pair<T, T> = min() to max()
 
-fun <T : Comparable<T>> Sequence<T>.min() = minOf { it }
-fun <T : Comparable<T>> Sequence<T>.max() = maxOf { it }
+fun <T : Comparable<T>> Sequence<T>.min(): T = minOf { it }
+fun <T : Comparable<T>> Sequence<T>.max(): T = maxOf { it }
 fun <T : Comparable<T>> Sequence<T>.bounds(): Pair<T, T> = min() to max()
+
+
+/** Returns true if this iterable only contains different elements. */
+fun <T : Any?> Iterable<T>.isDistinct(): Boolean = isDistinctBy { it }
+
+/** Returns true if this iterable only contains different elements. */
+fun <T : Any?> Sequence<T>.isDistinct(): Boolean = isDistinctBy { it }
+
+/** Returns true if the results produced by [function] on the elements of this iterable are all different. */
+fun <T : Any?, U : Any?> Iterable<T>.isDistinctBy(function: (T) -> U): Boolean = iterator().isDistinctBy(function)
+
+/** Returns true if the results produced by [function] on the elements of this sequence are all different. */
+fun <T : Any?, U : Any?> Sequence<T>.isDistinctBy(function: (T) -> U): Boolean = iterator().isDistinctBy(function)
+
+/** Returns true if this iterator only contains different elements. Consumes the iterator. */
+private fun <T, U : Any?> Iterator<T>.isDistinctBy(function: (T) -> U): Boolean {
+    val set = mutableSetOf<U>()
+    for (e in this) {
+        if (!set.add(function(e))) return false
+    }
+    return true
+}

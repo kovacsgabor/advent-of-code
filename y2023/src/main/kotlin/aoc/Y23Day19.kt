@@ -28,8 +28,6 @@ object Y23Day19 : Day() {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        test = false
-
         val (workflowDeclarations, ratingDeclarations) = lines.splitWhen { it.isEmpty() }
 
         val workflows = workflowDeclarations.map { line ->

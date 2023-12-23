@@ -56,7 +56,7 @@ internal class BoxTest {
                 Pos(1, 1),
                 Pos(2, 1),
             ),
-            PosBox(0..2L, 0..1L).toList()
+            PosBox(0..2L, 0..1L).xThenY().toList()
         )
     }
 
@@ -95,7 +95,7 @@ internal class BoxTest {
                 Xyz(2, 2, 1),
                 Xyz(3, 2, 1),
             ),
-            XyzBox(0L..3, 0L..2, 0L..1).toList()
+            XyzBox(0L..3, 0L..2, 0L..1).xThenYThenZ().toList()
         )
     }
 }

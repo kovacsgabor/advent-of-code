@@ -21,7 +21,8 @@ fun Xyz.neighbors26(): List<Xyz> = Dir26(this)
 sealed interface Directions2D : (Pos) -> List<Pos>, Graph<Pos> {
     val values: List<Pos>
 
-    override fun edges(node: Pos): Iterable<Pos> = this(node)
+    override fun neighbors(node: Pos): Sequence<Pos> = this(node).asSequence()
+    override fun forEachEdge(node: Pos, consumer: (Pos, Long) -> Unit) = values.forEach { consumer(it + node, 1) }
     override fun invoke(c: Pos): List<Pos> = values.map { c + it }
 }
 
@@ -33,7 +34,8 @@ sealed interface Directions2D : (Pos) -> List<Pos>, Graph<Pos> {
  */
 sealed interface Directions3D : (Xyz) -> List<Xyz>, Graph<Xyz> {
     val values: List<Xyz>
-    override fun edges(node: Xyz): Iterable<Xyz> = this(node)
+    override fun neighbors(node: Xyz): Sequence<Xyz> = this(node).asSequence()
+    override fun forEachEdge(node: Xyz, consumer: (Xyz, Long) -> Unit) = values.forEach { consumer(it + node, 1) }
     override fun invoke(c: Xyz): List<Xyz> = values.map { c + it }
 }
 
@@ -47,6 +49,7 @@ sealed class Dir4 private constructor(override val x: Long, override val y: Long
     object RIGHT : Dir4(1, 0)
 
     fun affectsX(): Boolean = this == RIGHT || this == LEFT
+
 
     /** Returns the direction that is 90 degrees to the left to this one. */
     fun left(): Dir4 = when (this) {
@@ -102,6 +105,15 @@ sealed class Dir4 private constructor(override val x: Long, override val y: Long
 
     companion object : Directions2D {
         override val values: List<Dir4> by lazy { listOf(UP, LEFT, DOWN, RIGHT) }
+
+        /** Tries to parse a direction from some common representations. */
+        fun of(arrow: String): Dir4? = when (arrow) {
+            "^", "U", "u", "N", "n" -> UP
+            ">", "R", "r", "E", "e" -> RIGHT
+            "<", "L", "l", "W", "w" -> LEFT
+            "v", "D", "d", "S", "s" -> DOWN
+            else -> null
+        }
     }
 
 }
