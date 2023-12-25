@@ -6,7 +6,7 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class CachedIterableTest {
+class CachedSequenceTest {
     @Test
     fun testIterator() {
         var phase = 0
@@ -19,7 +19,7 @@ class CachedIterableTest {
         }
 
         // Creation should not advance the sequence
-        val cs = CachedIterable(seq)
+        val cs = CachedSequence(seq)
         assertEquals(0, phase)
 
         // Access should advance the sequence only as necessary
@@ -51,7 +51,7 @@ class CachedIterableTest {
         }
 
         // Creation should not advance the sequence
-        val cs = CachedIterable(seq)
+        val cs = CachedSequence(seq)
         assertEquals(0, phase)
 
         // Querying 0 size should not advance the sequence
@@ -91,7 +91,7 @@ class CachedIterableTest {
         }
 
         // Creation should not advance the sequence
-        val cs = CachedIterable(seq)
+        val cs = CachedSequence(seq)
         assertEquals(0, phase)
 
         // Access should advance the sequence only as necessary

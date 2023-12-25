@@ -41,6 +41,7 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        jvmArgs("-Xmx16g")
         systemProperty("aoc.session.id", sessionId)
     }
 

@@ -5,14 +5,10 @@ package aoc
 import java.util.*
 
 /**
- * The lazily computed result of a search algorithm.
- * Due to the laziness, it can be used even on infinite graphs.
- *
- * Note: implements [Sequence] instead of [Iterable], so transformation functions like [Sequence.map] can be safely
- * called on it, even if contains infinite elements.
+ * A lazy cache around the result of a search algorithm.
  */
-class SearchResult<T>(s: Sequence<SearchInfo<T>>) : Sequence<SearchInfo<T>> {
-    private val cached = CachedIterable(s)
+class SearchCache<T>(s: Sequence<SearchInfo<T>>) : Sequence<SearchInfo<T>> {
+    private val cached = CachedSequence(s)
     private val map = mutableMapOf<T, SearchInfo<T>?>()
 
     operator fun get(v: T): SearchInfo<T>? = map.computeIfAbsent(v) { cached.firstOrNull { it.node == v } }
@@ -20,13 +16,13 @@ class SearchResult<T>(s: Sequence<SearchInfo<T>>) : Sequence<SearchInfo<T>> {
     override fun iterator(): Iterator<SearchInfo<T>> = cached.iterator()
 
     companion object {
-        internal operator fun <T> invoke(generator: suspend SequenceScope<SearchInfo<T>>.() -> Unit): SearchResult<T> =
-            SearchResult(sequence(generator))
+        internal operator fun <T> invoke(generator: suspend SequenceScope<SearchInfo<T>>.() -> Unit): SearchCache<T> =
+            SearchCache(sequence(generator))
     }
 }
 
 /**
- * Information about a node in a [SearchResult].
+ * Information about a node in a search result.
  *
  * @param node the node itself
  * @param prev the previous node, or null if [node] is that start node
@@ -38,9 +34,12 @@ data class SearchInfo<T>(val node: T, val prev: SearchInfo<T>?, val cost: Long) 
     override fun toString(): String = "SearchInfo(node=$node, prev=..., cost=$cost)"
 }
 
-val <T> SearchResult<T>.nodes: Sequence<T> get() = map { it.node }
+/** Creates a [SearchCache] from this search result. */
+fun <T> Sequence<SearchInfo<T>>.cached(): SearchCache<T> = SearchCache(this)
 
-fun <T> SearchResult<T>.toUMap(): UMap<T, SearchInfo<T>> {
+val <T> Sequence<SearchInfo<T>>.nodes: Sequence<T> get() = map { it.node }
+
+fun <T> Sequence<SearchInfo<T>>.toUMap(): UMap<T, SearchInfo<T>> {
     val map = umapOf<T, SearchInfo<T>>()
     forEach { map[it.node] = it }
     return map
@@ -78,7 +77,7 @@ val <T> SearchInfo<T>?.cost: Long get() = this?.cost ?: 0L
 fun <T> BaseGraph<T>.bfs(
     start: T,
     process: (T, SearchInfo<T>?, Long) -> Boolean = distinctFilter(),
-): SearchResult<T> {
+): Sequence<SearchInfo<T>> {
     val queue = mutableDequeOf<SearchInfo<T>>()
 
     fun enqueue(node: T, prev: SearchInfo<T>?, cost: Long) {
@@ -89,13 +88,17 @@ fun <T> BaseGraph<T>.bfs(
 
     enqueue(start, null, 0)
 
-    return SearchResult {
-        while (true) {
-            val info = queue.removeFirstOrNull() ?: break
-            yield(info)
+    val iterator = object : Iterator<SearchInfo<T>> {
+        override fun hasNext(): Boolean = queue.isNotEmpty()
+
+        override fun next(): SearchInfo<T> {
+            val info = queue.removeFirst()
             forEachEdge(info.node) { next, cost -> enqueue(next, info, info.cost + cost) }
+            return info
         }
     }
+
+    return Sequence { iterator }
 }
 
 
@@ -111,7 +114,7 @@ fun <T> BaseGraph<T>.bfs(
 fun <T> BaseGraph<T>.dfs(
     start: T,
     process: (T, SearchInfo<T>?, Long) -> Boolean = distinctFilter(),
-): SearchResult<T> {
+): Sequence<SearchInfo<T>> {
     // the two stacks are always of the same size
     val childrenStack = mutableListOf<Iterator<Edge<T>>>()
     val infoStack = mutableListOf<SearchInfo<T>?>()
@@ -119,29 +122,44 @@ fun <T> BaseGraph<T>.dfs(
     childrenStack += listOf(Edge(start, 0)).iterator()
     infoStack += null
 
-    return SearchResult {
-        while (childrenStack.isNotEmpty()) {
-            val last = childrenStack.last()
-            if (!last.hasNext()) {
-                childrenStack.removeLast()
-                infoStack.removeLast()
-                continue
-            }
+    val iterator = object : Iterator<SearchInfo<T>> {
+        private var next: SearchInfo<T>? = computeNext()
 
-            val prev = infoStack.last()
-            val (node, weight) = last.next()
-            val cost = prev.cost + weight
-            if (process(node, prev, cost)) {
-                val info = SearchInfo(node, prev, cost)
-                yield(info)
-                val iterator = edges(node).iterator()
-                if (iterator.hasNext()) {
-                    childrenStack += iterator
-                    infoStack += info
+        override fun hasNext(): Boolean = next != null
+
+        override fun next(): SearchInfo<T> {
+            val n = next!!
+            next = computeNext()
+            return n
+        }
+
+        private fun computeNext(): SearchInfo<T>? {
+            while (childrenStack.isNotEmpty()) {
+                val last = childrenStack.last()
+                if (!last.hasNext()) {
+                    childrenStack.removeLast()
+                    infoStack.removeLast()
+                    continue
+                }
+
+                val prev = infoStack.last()
+                val (node, weight) = last.next()
+                val cost = prev.cost + weight
+                if (process(node, prev, cost)) {
+                    val info = SearchInfo(node, prev, cost)
+                    val iterator = edges(node).iterator()
+                    if (iterator.hasNext()) {
+                        childrenStack += iterator
+                        infoStack += info
+                    }
+                    return info
                 }
             }
+            return null
         }
     }
+
+    return Sequence { iterator }
 }
 
 private fun <T> distinctFilter(): (T, SearchInfo<T>?, Long) -> Boolean {
@@ -150,7 +168,7 @@ private fun <T> distinctFilter(): (T, SearchInfo<T>?, Long) -> Boolean {
 }
 
 /** Runs Dijkstra's algorithm from the given node. */
-fun <T> WeightedGraph<T>.dijkstra(start: T): SearchResult<T> {
+fun <T> WeightedGraph<T>.dijkstra(start: T): Sequence<SearchInfo<T>> {
     val infoMap = mutableMapOf<T, SearchInfo<T>>()
     val queue = PriorityQueue<SearchInfo<T>>(compareBy { it.cost })
     val complete = mutableSetOf<T>() // a node is complete when it leaves the queue
@@ -171,15 +189,19 @@ fun <T> WeightedGraph<T>.dijkstra(start: T): SearchResult<T> {
 
     enqueueOrUpdate(start, null, 0)
 
-    return SearchResult {
-        while (true) {
-            val info = queue.poll() ?: break
-            yield(info)
+    val iterator = object : Iterator<SearchInfo<T>> {
+        override fun hasNext(): Boolean = queue.isNotEmpty()
+
+        override fun next(): SearchInfo<T> {
+            val info = queue.poll()
             val node = info.node
             infoMap -= node
             complete += node
             forEachEdge(node) { to, weight -> enqueueOrUpdate(to, info, info.cost + weight) }
+            return info
         }
     }
+
+    return Sequence { iterator }
 }
 

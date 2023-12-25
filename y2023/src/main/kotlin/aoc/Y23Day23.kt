@@ -45,8 +45,9 @@ object Y23Day23 : Day() {
                 }
                 .toUMap()
 
+            // Here a special DFS is required that can revisit nodes but does not allow a node to be repeated in a path
             return WeightedGraph<Pos> { edges[it] }
-                .bfs(start) { node, prev, _ -> prev.iterateBackwards.none { it.node == node } }
+                .dfs(start) { node, prev, _ -> prev.iterateBackwards.none { it.node == node } }
                 .filter { it.node == goal }
                 .map { it.cost }
                 .max()

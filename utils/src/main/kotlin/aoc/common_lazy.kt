@@ -4,8 +4,11 @@ package aoc
 /**
  * A wrapper around an iterator that lazily caches each returned value, so it can be iterated repeatedly,
  * but without the need to consume the iterator upfront. Useful when handling very big (potentially infinite) sequences.
- */
-open class CachedIterable<T>(private var underlyingIterator: Iterator<T>?) : Iterable<T> {
+ *
+ * Note: implements [Sequence] instead of [Iterable], so transformation functions like [Sequence.map] can be safely
+ * called on it, even if contains infinite elements.
+*/
+class CachedSequence<T>(private var underlyingIterator: Iterator<T>?) : Sequence<T> {
     constructor(iterable: Iterable<T>) : this(iterable.iterator())
     constructor(sequence: Sequence<T>) : this(sequence.iterator())
 
@@ -47,13 +50,18 @@ open class CachedIterable<T>(private var underlyingIterator: Iterator<T>?) : Ite
 
 }
 
-/** Creates a new [CachedIterable] that transforms each element in this iterable using the given function. */
-fun <T, R> Iterable<T>.mapLazily(f: T.() -> R): Iterable<R> = CachedIterable(object : Iterable<R> {
-    override fun iterator(): Iterator<R> {
-        val it = this@mapLazily.iterator()
-        return object : Iterator<R> {
+/** Creates a new [CachedSequence] that transforms each element in this iterable using the given function. */
+fun <T, R> Iterable<T>.mapLazily(f: T.() -> R): Iterable<R> =
+    Iterable {
+        val it = iterator()
+        object : Iterator<R> {
             override fun hasNext(): Boolean = it.hasNext()
             override fun next(): R = f(it.next())
         }
     }
-})
+
+/** Creates a new [CachedSequence] that wraps this iterable. */
+fun <T> Iterable<T>.cached(): Iterable<T> = CachedSequence(this).asIterable()
+
+/** Creates a new [CachedSequence] that wraps this sequence. */
+fun <T> Sequence<T>.cached(): Sequence<T> = CachedSequence(this)
