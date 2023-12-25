@@ -36,6 +36,9 @@ fun <K, V> Map<K, V>.toUMap(default: V? = null) =
 /** Converts this list of paris to a [UMap]. */
 fun <K, V> Iterable<Pair<K, V>>.toUMap(default: V? = null): UMap<K, V> = UMap(default, toMap(mutableMapOf()))
 
+/** Converts this list of paris to a [UMap]. */
+fun <K, V> Sequence<Pair<K, V>>.toUMap(default: V? = null): UMap<K, V> = UMap(default, toMap(mutableMapOf()))
+
 /** Creates an empty [UMap] with the given default value. */
 fun <K, V> umapOf(default: V? = null): UMap<K, V> = UMap(default, mutableMapOf())
 

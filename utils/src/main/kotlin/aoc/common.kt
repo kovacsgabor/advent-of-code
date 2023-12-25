@@ -1,5 +1,6 @@
 package aoc
 
+import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 
@@ -9,13 +10,14 @@ typealias MSet<T> = MutableSet<T>
 typealias MMap<K, V> = MutableMap<K, V>
 typealias BitSet = java.util.BitSet
 
+fun Long.toBig(): BigInteger = toBigInteger()
+
 fun <T> Iterable<T>.toMList(): MList<T> = toMutableList()
 fun <T> Iterable<T>.toMSet(): MSet<T> = toMutableSet()
 fun <K, V> Map<K, V>.toMMap(): MMap<K, V> = toMutableMap()
 
 fun <T> mutableDequeOf(vararg values: T): ArrayDeque<T> = ArrayDeque(values.asList())
 fun <T> nCopies(n : Int, value: T): List<T> = Collections.nCopies(n, value)
-
 
 // Getter and setter for lists using a long index
 operator fun <T> List<T>.get(index: Long): T = get(index.toInt())

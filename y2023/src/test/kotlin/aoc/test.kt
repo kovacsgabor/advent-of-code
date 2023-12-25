@@ -20,20 +20,22 @@ class Y2023Test {
         test(Y23Day10, 6882, 491),
         test(Y23Day11, 10494813, 840988812853),
         test(Y23Day12, 7939, 850504257483930),
-        test(Y23Day13,41859,30842),
-        test(Y23Day14,105784,91286),
-        test(Y23Day15,513214,258826),
-        test(Y23Day16,7608,8221),
-        test(Y23Day17,861,1037),
-        test(Y23Day18,67891,94116351948493),
-        test(Y23Day19,377025,135506683246673),
-        test(Y23Day20,737679780,227411378431763),
-        test(Y23Day21,3709,617361073602319),
-        test(Y23Day22,497,67468),
-        test(Y23Day23,2298,6602),
+        test(Y23Day13, 41859, 30842),
+        test(Y23Day14, 105784, 91286),
+        test(Y23Day15, 513214, 258826),
+        test(Y23Day16, 7608, 8221),
+        test(Y23Day17, 861, 1037),
+        test(Y23Day18, 67891, 94116351948493),
+        test(Y23Day19, 377025, 135506683246673),
+        test(Y23Day20, 737679780, 227411378431763),
+        test(Y23Day21, 3709, 617361073602319),
+        test(Y23Day22, 497, 67468),
+        test(Y23Day23, 2298, 6602),
+        test(Y23Day24, 16812, 880547248556435),
+        test(Y23Day25, 554064, null),
     )
 
-    private fun test(d: Day, part1: Any, part2: Any): DynamicTest =
+    private fun test(d: Day, part1: Any, part2: Any?): DynamicTest =
         DynamicTest.dynamicTest(d.toString()) { d.test(part1, part2) }
 
 }

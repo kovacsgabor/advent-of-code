@@ -45,6 +45,9 @@ fun <T> Sequence<SearchInfo<T>>.toUMap(): UMap<T, SearchInfo<T>> {
     return map
 }
 
+/** Returns the weight of the edge used in this step, or null if this is the initial step. */
+val <T> SearchInfo<T>.weight: Long? get() = if (prev != null) cost - prev.cost else null
+
 /** The path from the start to this info node. */
 val <T> SearchInfo<T>?.pathForwards: List<SearchInfo<T>> get() = iterateBackwards.asIterable().reversed()
 
@@ -64,6 +67,18 @@ val <T> SearchInfo<T>?.iterateBackwards: Sequence<SearchInfo<T>>
 
 /** Returns the cost of this info, or 0 if the info is null. */
 val <T> SearchInfo<T>?.cost: Long get() = this?.cost ?: 0L
+
+
+/**
+ * Returns the nodes reachable from the given node.
+ */
+fun <T> BaseGraph<T>.findReachable(start: T): Set<T> {
+    val complete = mutableSetOf<T>()
+    val it = bfs(start) { node, _, _ -> complete.add(node) }.iterator()
+    while (it.hasNext()) it.next()
+    return complete
+}
+
 
 /**
  * Runs breadth-first-search from the given node with custom logic to decide which paths should be visited.

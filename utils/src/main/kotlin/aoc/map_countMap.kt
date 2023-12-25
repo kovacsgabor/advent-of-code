@@ -13,6 +13,9 @@ fun <K> Map<K, Long>.toCountMap() = CountMap(toMMap())
 /** Converts this list of pairs to a [CountMap]. */
 fun <K> Iterable<Pair<K, Long>>.toCountMap(): CountMap<K> = CountMap(toMap(mutableMapOf()))
 
+/** Converts this list of pairs to a [CountMap]. */
+fun <K> Sequence<Pair<K, Long>>.toCountMap(): CountMap<K> = CountMap(toMap(mutableMapOf()))
+
 /** Creates an empty [CountMap]. */
 fun <K> countMapOf(): CountMap<K> = CountMap(mutableMapOf())
 

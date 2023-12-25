@@ -88,6 +88,17 @@ fun <K> Map<Pos, K>.toString(defaultText: String = "", widen: Int = 0, func: (K)
     keys.toString(defaultText, widen) { func(this[it]!!) }
 
 
+/** Returns the components of this vector in a list. */
+fun Pos.toList(): List<Long> = listOf(x, y)
+
+/** Returns the components of this vector in a list. */
+fun Xyz.toList(): List<Long> = listOf(x, y, z)
+
+
+/** Returns the turn direction when going from a to b and to c. */
+fun turn(a: Xyz, b: Xyz, c: Xyz): Long = ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)).sign()
+
+
 // hashCode is optimized for small coordinates (the multiplier is the largest prime below the square root of 2^32)
 internal fun Pos.hash(): Int = x.toInt() * 65_521 + y.toInt()
 internal fun Pos.isEqualTo(other: Any?): Boolean = other is Pos && x == other.x && y == other.y

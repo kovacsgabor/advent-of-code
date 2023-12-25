@@ -4,7 +4,7 @@ import aoc.Day
 import kotlin.reflect.jvm.kotlinFunction
 
 /** Runs the given day and compares its results to the given objects. Compares results using [Any.toString]. */
-fun Day.test(expectedPart1: Any, expectedPart2: Any) {
+fun Day.test(expectedPart1: Any, expectedPart2: Any?) {
     javaClass
         .getDeclaredMethod("main", Array<String>::class.java)
         .kotlinFunction!!
