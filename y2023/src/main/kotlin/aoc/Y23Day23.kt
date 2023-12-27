@@ -21,7 +21,15 @@ object Y23Day23 : Day() {
         val junctions = map
             .keys
             .filter { pos -> pos == start || pos == goal || Dir4.values.count { it + pos in map } > 2 }
-            .toSet()
+            .toList()
+
+        check(junctions.size < 64)
+
+        val junctionToIndexMap = junctions.mapIndexed { index, pos -> pos to index }.toUMap()
+
+        val startIndex = junctionToIndexMap[start]
+        val goalIndex = junctionToIndexMap[goal]
+        val all = junctions.indices.map { 1L shl it }.reduce(Long::or)
 
         fun solve(slopesMatter: Boolean): Long {
             var graph = Dir4.filterNodes { it in map }
@@ -37,24 +45,51 @@ object Y23Day23 : Day() {
                 .associateWith { pos ->
                     // Find all paths to other junctions
                     graph
-                        .filterEdges { from, _ -> from == pos || from !in junctions }
+                        .filterEdges { from, _ -> from == pos || from !in junctionToIndexMap }
                         .bfs(pos)
-                        .filter { it.node != pos && it.node in junctions }
-                        .map { Edge(it.node, it.cost) }
-                        .toList()
+                        .filter { it.node in junctionToIndexMap && it.node != pos }
+                        .map { it.node to it.cost }
+                        .toMap()
                 }
-                .toUMap()
 
-            // Here a special DFS is required that can revisit nodes but does not allow a node to be repeated in a path
-            return WeightedGraph<Pos> { edges[it] }
-                .dfs(start) { node, prev, _ -> prev.iterateBackwards.none { it.node == node } }
-                .filter { it.node == goal }
-                .map { it.cost }
-                .max()
+            val edgeCostsByIndex = junctions.map { from ->
+                val m = edges[from]!!
+                junctions.map { to -> m.getOrDefault(to, 0L) }
+            }
+
+            val edgeBitSet = edgeCostsByIndex.map { costs ->
+                costs
+                    .mapIndexedNotNull { index, cost -> if (cost > 0) 1L shl index else null }
+                    .reduceOrNull(Long::or) ?: 0L
+            }
+
+            var maxCost = 0L
+
+            fun search(index: Int, notVisited: Long, cost: Long) {
+                if (index == goalIndex) {
+                    maxCost = max(maxCost, cost)
+                    return
+                }
+
+                val nv = notVisited xor (1L shl index)
+                var targets = edgeBitSet[index] and nv
+                val costs = edgeCostsByIndex[index]
+
+                while (targets != 0L) {
+                    val lowest = targets.takeLowestOneBit()
+                    val nextIndex = lowest.countTrailingZeroBits()
+                    search(nextIndex, nv, cost + costs[nextIndex])
+                    targets = targets xor lowest
+                }
+            }
+
+            search(startIndex, all, 0L)
+            return maxCost
         }
 
         part1(solve(true))
         part2(solve(false))
     }
+
 
 }
